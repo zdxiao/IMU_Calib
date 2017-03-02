@@ -1,6 +1,11 @@
+/** @brief act the calibration to the imu raw data by the parameter from imu-tk
+/*  	The calibration model is imu_calib = T * K * (imu_raw -  bias)
+*	@author: Shon Xiao, at Tencent Inlab
+*	@date: March 2nd, 2017
+*/
 #include "imu_calib.h"
 
-void M3xV3(double M3[3][3], double V3[3], double ret[3])
+void Calibration::M3xV3(const std::vector<std::vector<double> > &M3, const std::vector<double> &V3, std::vector<double> &ret)
 {
 	for(int i = 0; i < 3; ++i)
 	{
@@ -8,43 +13,91 @@ void M3xV3(double M3[3][3], double V3[3], double ret[3])
 	}
 }
 
-void calib_trans(double raw_data[3], double T[3][3], double K[3][3], double bias[3], double calib_data[3])
+void Calibration::calib_trans(const std::vector<double> &raw_data, const std::vector<std::vector<double> > &T, const std::vector<std::vector<double> > &K, 
+	const std::vector<double> &bias, std::vector<double> &calib_data)
 {
-	double unbias_data[3] = {0};
+	std::vector<double> unbias_data(3, 0);
 	for(int i = 0; i < 3; ++i)
 		unbias_data[i] = raw_data[i] - bias[i];
-	double tmp[3];
+	std::vector<double> tmp(3, 0);
 	M3xV3(K, unbias_data, tmp);
 	M3xV3(T, tmp, calib_data);
 }
 
-void imu_calib(double acce[3], double gyro[3], double acce_calib[3], double gyro_calib[3])
+bool Calibration::imu_calib(const std::vector<double> &acce, const std::vector<double> &gyro, std::vector<double> &acce_calib, std::vector<double> &gyro_calib)
 {
-	// calibrate accelerameter
-	// parameter for HUAWEI MATE 7
-	double Ta[3][3] = {	1,   0.00747551,   	0.00226059,
-           				0,        1, 		-0.000356226,
-          				-0,       0,            1};
+	if(Ta.size() == 3)
+	{
+		calib_trans(acce, Ta, Ka, acce_bias, acce_calib);
+	}
+    else
+    {
+    	return false;
+    }
 
- 	double Ka[3][3] = {0.982981,    0,       0,
-      					0, 		1.00974,     0,
-      					0,       	0,		 1.03968};
+    if(Tg.size() == 3)
+	{
+		calib_trans(gyro, Tg, Kg, gyro_bias, gyro_calib);
+	}
+	else
+	{
+		return false;
+	}
+	return true;
+}
 
-    double acce_bias[3] = {0.0836118,	-0.172405,	0.450842};
-
-    calib_trans(acce, Ta, Ka, acce_bias, acce_calib);
-
-    // calibrate gyroscope
- 	// parameter for HUAWEI MATE 7
-    double Tg[3][3] = {	1.0,	  	0.0226504,	  0.0227521,
-						-0.0215821, 	1.0,	  0.00975126,
- 						0.0271248,  0.0365932,      1.0};
-
-    double Kg[3][3] = {1.00083,       0,       	0,
-      					0, 		1.03722,       	0,
-      					0,       0, 			1.01485};
-
-    double gyro_bias[3] = {0.00154775,	-0.000749839,	0.00522445};
-
-    calib_trans(gyro, Tg, Kg, gyro_bias, gyro_calib);
+// calibrate accelerate
+bool Calibration::imu_calib_acce(const std::vector<double> &acce, std::vector<double> &acce_calib)
+{
+	if(Ta.size() == 3)
+	{
+		calib_trans(acce, Ta, Ka, acce_bias, acce_calib);
+	}
+    else
+    {
+    	return false;
+    }
+    return true;
+}
+// calibrate gyroscope
+bool Calibration::imu_calib_gyro(const std::vector<double> &gyro, std::vector<double> &gyro_calib)
+{
+    if(Tg.size() == 3)
+	{
+		calib_trans(gyro, Tg, Kg, gyro_bias, gyro_calib);
+	}
+	else
+	{
+		return false;
+	}
+	return true;
+}
+// set accelerate calibration parameters
+void Calibration::set_acce_params(const std::vector<std::vector<double> > &T, const std::vector<std::vector<double> > &K, 
+	const std::vector<double> &bias)
+{
+	Ta = T;
+	Ka = K;
+	acce_bias = bias;
+}
+// set gyroscope calibration parameters
+void Calibration::set_gyro_params(const std::vector<std::vector<double> > &T, const std::vector<std::vector<double> > &K, const std::vector<double> &bias)
+{
+	Tg = T;
+	Kg = K;
+	gyro_bias = bias;
+}
+// get accelerate calibration parameters
+void Calibration::get_acce_params(std::vector<std::vector<double> > &T, std::vector<std::vector<double> > &K, std::vector<double> &bias)
+{
+	T = Ta;
+	K = Ka;
+	bias = acce_bias;
+}
+// get gyroscope calibration parameters
+void Calibration::get_gyro_params(std::vector<std::vector<double> > &T, std::vector<std::vector<double> > &K, std::vector<double> &bias)
+{
+	T = Tg;
+	K = Kg;
+	bias = gyro_bias;
 }
