@@ -39,6 +39,15 @@ int main(int argc, char* argv[])
 
 	bool successed = calib.imu_calib(acce, gyro, acce_calib, gyro_calib);
 
+	if(successed)
+	{
+		std::cout << "calibration successed!" << std::endl;
+	}
+	else
+	{
+		std::cout << "error, please check the input parameter!" << std::endl;
+	}
+
 	std::cout << acce_calib[0] << " " << acce_calib[1] << " " << acce_calib[2] << std::endl;
 	std::cout << gyro_calib[0] << " " << gyro_calib[1] << " " << gyro_calib[2] << std::endl;
 	

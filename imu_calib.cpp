@@ -26,7 +26,7 @@ void Calibration::calib_trans(const std::vector<double> &raw_data, const std::ve
 
 bool Calibration::imu_calib(const std::vector<double> &acce, const std::vector<double> &gyro, std::vector<double> &acce_calib, std::vector<double> &gyro_calib)
 {
-	if(Ta.size() == 3)
+	if(Ta.size() == 3 && Ka.size() == 3 && acce_bias.size() == 3)
 	{
 		calib_trans(acce, Ta, Ka, acce_bias, acce_calib);
 	}
@@ -35,7 +35,7 @@ bool Calibration::imu_calib(const std::vector<double> &acce, const std::vector<d
     	return false;
     }
 
-    if(Tg.size() == 3)
+    if(Tg.size() == 3 && Kg.size() == 3 && gyro_bias.size() == 3)
 	{
 		calib_trans(gyro, Tg, Kg, gyro_bias, gyro_calib);
 	}
@@ -49,7 +49,7 @@ bool Calibration::imu_calib(const std::vector<double> &acce, const std::vector<d
 // calibrate accelerate
 bool Calibration::imu_calib_acce(const std::vector<double> &acce, std::vector<double> &acce_calib)
 {
-	if(Ta.size() == 3)
+	if(Ta.size() == 3 && Ka.size() == 3 && acce_bias.size() == 3)
 	{
 		calib_trans(acce, Ta, Ka, acce_bias, acce_calib);
 	}
@@ -62,7 +62,7 @@ bool Calibration::imu_calib_acce(const std::vector<double> &acce, std::vector<do
 // calibrate gyroscope
 bool Calibration::imu_calib_gyro(const std::vector<double> &gyro, std::vector<double> &gyro_calib)
 {
-    if(Tg.size() == 3)
+    if(Tg.size() == 3 && Kg.size() == 3 && gyro_bias.size() == 3)
 	{
 		calib_trans(gyro, Tg, Kg, gyro_bias, gyro_calib);
 	}
